@@ -2,6 +2,7 @@ import numpy as np
 
 # _project and _build_view are module-level helpers — import directly
 from sim.renderer import _project, _build_view, _compute_chase_cam, CAM_DIST, CAM_Z_OFFSET, CAM_LOOK_AHEAD, CAM_ALPHA, CAM_SPEED_THRESH
+from sim.renderer import WHITE, DIM, GREY, GREEN, BLUE, RED, BLACK
 
 def _make_view():
     eye    = np.array([-10.0, -14.0, 18.0])
@@ -55,3 +56,12 @@ def test_chase_cam_target_is_ahead_of_drone():
     # target should be ahead of drone in +X
     assert target[0] > drone_pos[0]
     assert abs(target[0] - (drone_pos[0] + CAM_LOOK_AHEAD)) < 0.01
+
+def test_minecraft_overworld_palette():
+    assert WHITE == (120, 167, 210), f"Expected sky blue, got {WHITE}"
+    assert DIM   == (74,  74,  74),  f"Expected bedrock dark, got {DIM}"
+    assert GREY  == (123, 123, 123), f"Expected stone grey, got {GREY}"
+    assert GREEN == (248, 204, 38),  f"Expected gold beacon, got {GREEN}"
+    assert BLUE  == (64,  164, 223), f"Expected water blue, got {BLUE}"
+    assert RED   == (220, 70,  20),  f"Expected redstone orange, got {RED}"
+    assert BLACK == (255, 255, 255), f"Expected MC UI white, got {BLACK}"

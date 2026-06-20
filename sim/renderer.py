@@ -12,13 +12,13 @@ W_PX, H_PX = 900, 650
 RENDER_HZ = 30.0
 RENDER_DT = 1.0 / RENDER_HZ
 
-BLACK  = (0,   0,   0)
-WHITE  = (240, 240, 240)
-RED    = (220, 60,  60)
-GREEN  = (60,  200, 80)
-BLUE   = (80,  140, 230)
-GREY   = (130, 130, 130)
-DIM    = (180, 180, 180)
+BLACK  = (255, 255, 255)   # MC UI font white
+WHITE  = (120, 167, 210)   # clear day sky
+RED    = (220,  70,  20)   # redstone torch
+GREEN  = (248, 204,  38)   # gold block beacon
+BLUE   = ( 64, 164, 223)   # water/ice
+GREY   = (123, 123, 123)   # stone block
+DIM    = ( 74,  74,  74)   # bedrock/void edge
 
 def _build_view(eye: np.ndarray, target: np.ndarray, up: np.ndarray) -> np.ndarray:
     f = target - eye
