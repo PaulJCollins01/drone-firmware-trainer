@@ -19,6 +19,7 @@ GREEN  = (248, 204,  38)   # gold block beacon
 BLUE   = ( 64, 164, 223)   # water/ice
 GREY   = (123, 123, 123)   # stone block
 DIM    = ( 74,  74,  74)   # bedrock/void edge
+GRASS  = (89,  125,  39)   # Minecraft grass green
 
 def _build_view(eye: np.ndarray, target: np.ndarray, up: np.ndarray) -> np.ndarray:
     f = target - eye
@@ -74,6 +75,18 @@ def _draw_line(surf, color, a3, b3, view: np.ndarray, width=1) -> None:
     if pa and pb:
         pygame.draw.line(surf, color, pa, pb, width)
 
+def _draw_ground(surf, view: np.ndarray, arena_w: float, arena_h: float) -> None:
+    corners_3d = [
+        (0.0,     0.0,     0.0),
+        (arena_w, 0.0,     0.0),
+        (arena_w, arena_h, 0.0),
+        (0.0,     arena_h, 0.0),
+    ]
+    pts = [_project(x, y, z, view) for x, y, z in corners_3d]
+    if any(p is None for p in pts):
+        return
+    pygame.draw.polygon(surf, GRASS, pts)
+
 def _box_edges(b: Box):
     x, y, z, w, h, d = b.x, b.y, b.z, b.w, b.h, b.d
     c = [
@@ -117,6 +130,8 @@ class Renderer:
             drone_pos, drone.vx, drone.vy, self._cam_dir
         )
         view = _build_view(eye, target, np.array([0.0, 0.0, 1.0]))
+
+        _draw_ground(self.screen, view, self.world.arena_w, self.world.arena_h)
 
         # arena bounding box
         W, H, D = self.world.arena_w, self.world.arena_h, self.world.arena_d

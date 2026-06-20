@@ -3,6 +3,7 @@ import numpy as np
 # _project and _build_view are module-level helpers — import directly
 from sim.renderer import _project, _build_view, _compute_chase_cam, CAM_DIST, CAM_Z_OFFSET, CAM_LOOK_AHEAD, CAM_ALPHA, CAM_SPEED_THRESH
 from sim.renderer import WHITE, DIM, GREY, GREEN, BLUE, RED, BLACK
+from sim.renderer import GRASS, _draw_ground
 
 def _make_view():
     eye    = np.array([-10.0, -14.0, 18.0])
@@ -65,3 +66,13 @@ def test_minecraft_overworld_palette():
     assert BLUE  == (64,  164, 223), f"Expected water blue, got {BLUE}"
     assert RED   == (220, 70,  20),  f"Expected redstone orange, got {RED}"
     assert BLACK == (255, 255, 255), f"Expected MC UI white, got {BLACK}"
+
+def test_grass_color():
+    assert GRASS == (89, 125, 39), f"Expected Minecraft grass green, got {GRASS}"
+
+def test_draw_ground_skips_when_corner_behind_camera():
+    # A view matrix where all ground corners are behind the camera (z >= -0.1)
+    # Use identity — points at z=0 project to p[2]=0 which is >= -0.1, so all return None
+    view = np.eye(4)
+    # Should not raise even when all corners clip
+    _draw_ground(None, view, 20.0, 15.0)
