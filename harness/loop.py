@@ -1,6 +1,7 @@
 import importlib
 import math
 import time
+from typing import Optional
 import numpy as np
 
 from firmware.contract import MotorCommand, SensorPacket
@@ -27,7 +28,7 @@ def run_episode(world: World, firmware_obj, seed: int, max_t: float = 30.0, rend
     overruns = 0
     min_clr = float("inf")
     outcome = Outcome.TIMEOUT
-    fault_msg: str | None = None
+    fault_msg: Optional[str] = None
     next_wall = time.perf_counter() if render_cb is not None else None
 
     while drone.t < max_t:
@@ -50,7 +51,7 @@ def run_episode(world: World, firmware_obj, seed: int, max_t: float = 30.0, rend
 
         step_physics(drone, cmd.thrust, DT)
 
-        clr = min_clearance(world.obstacles, drone.x, drone.y)
+        clr = min_clearance(world.obstacles, drone.x, drone.y, drone.z)
         if clr < min_clr:
             min_clr = clr
 
@@ -63,14 +64,16 @@ def run_episode(world: World, firmware_obj, seed: int, max_t: float = 30.0, rend
             else:
                 next_wall = time.perf_counter()
 
-        gx, gy = world.goal_center
-        if math.hypot(drone.x - gx, drone.y - gy) <= world.goal_radius:
+        gx, gy, gz = world.goal_center
+        if math.sqrt((drone.x-gx)**2 + (drone.y-gy)**2 + (drone.z-gz)**2) <= world.goal_radius:
             outcome = Outcome.SUCCESS
             break
-        if is_inside_any(world.obstacles, drone.x, drone.y):
+        if is_inside_any(world.obstacles, drone.x, drone.y, drone.z):
             outcome = Outcome.CRASH
             break
-        if drone.x < 0 or drone.x > world.arena_w or drone.y < 0 or drone.y > world.arena_h:
+        if (drone.x < 0 or drone.x > world.arena_w
+                or drone.y < 0 or drone.y > world.arena_h
+                or drone.z < 0 or drone.z > world.arena_d):
             outcome = Outcome.CRASH
             fault_msg = "out of bounds"
             break
