@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 import numpy as np
 import pygame
 
-from firmware.contract import MotorCommand, SensorPacket
+from firmware.contract import MotorCommand, SensorPacket, RAY_DIRS
 from sim.physics import DroneState
 from sim.world import World, Box
 
@@ -18,7 +18,6 @@ RED    = (220, 60,  60)
 GREEN  = (60,  200, 80)
 BLUE   = (80,  140, 230)
 GREY   = (130, 130, 130)
-YELLOW = (230, 200, 50)
 DIM    = (180, 180, 180)
 
 def _build_view(eye: np.ndarray, target: np.ndarray, up: np.ndarray) -> np.ndarray:
@@ -41,6 +40,7 @@ CAM_Z_OFFSET     = 3.0
 CAM_LOOK_AHEAD   = 1.0
 CAM_ALPHA        = 0.05
 CAM_SPEED_THRESH = 0.1
+
 
 def _compute_chase_cam(
     drone_pos: np.ndarray,
@@ -144,7 +144,6 @@ class Renderer:
 
         # rays from drone
         dx, dy, dz = drone.x, drone.y, drone.z
-        from sim.sensors import RAY_DIRS
         for i, ray in enumerate(packet.rays):
             rdx, rdy, rdz = RAY_DIRS[i]
             end = (dx + rdx * ray, dy + rdy * ray, dz + rdz * ray)

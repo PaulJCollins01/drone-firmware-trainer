@@ -1,7 +1,6 @@
-import itertools
 import math
 import numpy as np
-from firmware.contract import SensorPacket, RAY_COUNT_3D
+from firmware.contract import SensorPacket, RAY_COUNT_3D, RAY_DIRS
 from sim.physics import DroneState
 from sim.world import Box
 
@@ -14,21 +13,6 @@ POS_NOISE  = 0.05
 YAW_NOISE  = 0.02
 PITCH_NOISE = 0.02
 QUANT = 0.01
-
-# 26 unit vectors pointing toward every neighbor in a 3x3x3 grid (excluding center).
-# Fixed world-space directions — firmware always knows which index points which way.
-_DIRS_RAW = [
-    (dx, dy, dz)
-    for dx, dy, dz in itertools.product((-1, 0, 1), repeat=3)
-    if (dx, dy, dz) != (0, 0, 0)
-]
-assert len(_DIRS_RAW) == RAY_COUNT_3D
-RAY_DIRS: tuple[tuple[float, float, float], ...] = tuple(
-    (dx / math.sqrt(dx*dx + dy*dy + dz*dz),
-     dy / math.sqrt(dx*dx + dy*dy + dz*dz),
-     dz / math.sqrt(dx*dx + dy*dy + dz*dz))
-    for dx, dy, dz in _DIRS_RAW
-)
 
 def _q(v: float) -> float:
     return round(v / QUANT) * QUANT

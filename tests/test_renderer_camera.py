@@ -1,16 +1,7 @@
 import numpy as np
-import pytest
 
 # _project and _build_view are module-level helpers — import directly
-from sim.renderer import _project, _build_view, _compute_chase_cam
-
-W_PX, H_PX = 900, 650
-
-CAM_DIST        = 6.0
-CAM_Z_OFFSET    = 3.0
-CAM_LOOK_AHEAD  = 1.0
-CAM_ALPHA       = 0.05
-CAM_SPEED_THRESH = 0.1
+from sim.renderer import _project, _build_view, _compute_chase_cam, CAM_DIST, CAM_Z_OFFSET, CAM_LOOK_AHEAD, CAM_ALPHA, CAM_SPEED_THRESH
 
 def _make_view():
     eye    = np.array([-10.0, -14.0, 18.0])

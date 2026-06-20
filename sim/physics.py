@@ -41,12 +41,16 @@ def min_clearance(boxes: list[Box], px: float, py: float, pz: float) -> float:
         return float("inf")
     best = float("inf")
     for b in boxes:
-        cx = max(b.x, min(px, b.x + b.w))
-        cy = max(b.y, min(py, b.y + b.h))
-        cz = max(b.z, min(pz, b.z + b.d))
-        d = ((px - cx) ** 2 + (py - cy) ** 2 + (pz - cz) ** 2) ** 0.5
         if b.contains_point(px, py, pz):
-            d = -d
+            face_dx = min(px - b.x, b.x + b.w - px)
+            face_dy = min(py - b.y, b.y + b.h - py)
+            face_dz = min(pz - b.z, b.z + b.d - pz)
+            d = -min(face_dx, face_dy, face_dz)
+        else:
+            cx = max(b.x, min(px, b.x + b.w))
+            cy = max(b.y, min(py, b.y + b.h))
+            cz = max(b.z, min(pz, b.z + b.d))
+            d = ((px - cx) ** 2 + (py - cy) ** 2 + (pz - cz) ** 2) ** 0.5
         if d < best:
             best = d
     return best
