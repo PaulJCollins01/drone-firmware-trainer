@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
 
 class Outcome(str, Enum):
     SUCCESS = "SUCCESS"
@@ -16,7 +17,7 @@ class RunResult:
     mean_tick_ms: float
     max_tick_ms: float
     num_overruns: int
-    fault_msg: str | None = None
+    fault_msg: Optional[str] = None
 
 def format_result(r: RunResult) -> str:
     tag = r.outcome.value
