@@ -21,12 +21,6 @@ GREY   = (130, 130, 130)
 YELLOW = (230, 200, 50)
 DIM    = (180, 180, 180)
 
-# Camera: positioned outside the arena looking in toward its center
-_CAM_POS    = np.array([-10.0, -14.0, 18.0])
-_CAM_TARGET = np.array([10.0,   7.5,   5.0])
-_CAM_UP     = np.array([0.0,    0.0,   1.0])
-_FOV_DEG    = 55.0
-
 def _build_view(eye: np.ndarray, target: np.ndarray, up: np.ndarray) -> np.ndarray:
     f = target - eye
     f /= np.linalg.norm(f)
@@ -39,21 +33,20 @@ def _build_view(eye: np.ndarray, target: np.ndarray, up: np.ndarray) -> np.ndarr
     M[2, :3] = -f; M[2, 3] =  f @ eye
     return M
 
-_VIEW = _build_view(_CAM_POS, _CAM_TARGET, _CAM_UP)
-_F    = 1.0 / math.tan(math.radians(_FOV_DEG) / 2)
+_F      = 1.0 / math.tan(math.radians(55.0) / 2)
 _ASPECT = W_PX / H_PX
 
-def _project(x: float, y: float, z: float) -> Optional[Tuple[int, int]]:
-    p = _VIEW @ np.array([x, y, z, 1.0])
+def _project(x: float, y: float, z: float, view: np.ndarray) -> Optional[Tuple[int, int]]:
+    p = view @ np.array([x, y, z, 1.0])
     if p[2] >= -0.1:
         return None  # behind camera
     sx = int(( _F / _ASPECT * p[0] / (-p[2]) + 1) * W_PX / 2)
     sy = int((1 - _F              * p[1] / (-p[2])) * H_PX / 2)
     return sx, sy
 
-def _draw_line(surf, color, a3, b3, width=1) -> None:
-    pa = _project(*a3)
-    pb = _project(*b3)
+def _draw_line(surf, color, a3, b3, view: np.ndarray, width=1) -> None:
+    pa = _project(*a3, view)
+    pb = _project(*b3, view)
     if pa and pb:
         pygame.draw.line(surf, color, pa, pb, width)
 
@@ -94,16 +87,22 @@ class Renderer:
 
         self.screen.fill(WHITE)
 
+        _tmp_view = _build_view(
+            np.array([-10.0, -14.0, 18.0]),
+            np.array([10.0,   7.5,   5.0]),
+            np.array([0.0,    0.0,   1.0]),
+        )
+
         # arena bounding box
         W, H, D = self.world.arena_w, self.world.arena_h, self.world.arena_d
         arena = Box(0.0, 0.0, 0.0, W, H, D)
         for a, b in _box_edges(arena):
-            _draw_line(self.screen, DIM, a, b)
+            _draw_line(self.screen, DIM, a, b, _tmp_view)
 
         # obstacles
         for obs in self.world.obstacles:
             for a, b in _box_edges(obs):
-                _draw_line(self.screen, GREY, a, b, 2)
+                _draw_line(self.screen, GREY, a, b, _tmp_view, 2)
 
         # goal marker: three crossing circles approximated as dot + crosshair lines
         gx, gy, gz = self.world.goal_center
@@ -113,8 +112,8 @@ class Renderer:
             ((gx, gy-r, gz), (gx, gy+r, gz)),
             ((gx, gy, gz-r), (gx, gy, gz+r)),
         ]:
-            _draw_line(self.screen, GREEN, a, b, 3)
-        gp = _project(gx, gy, gz)
+            _draw_line(self.screen, GREEN, a, b, _tmp_view, 3)
+        gp = _project(gx, gy, gz, _tmp_view)
         if gp:
             pygame.draw.circle(self.screen, GREEN, gp, 8, 2)
 
@@ -124,10 +123,10 @@ class Renderer:
         for i, ray in enumerate(packet.rays):
             rdx, rdy, rdz = RAY_DIRS[i]
             end = (dx + rdx * ray, dy + rdy * ray, dz + rdz * ray)
-            _draw_line(self.screen, BLUE, (dx, dy, dz), end)
+            _draw_line(self.screen, BLUE, (dx, dy, dz), end, _tmp_view)
 
         # drone dot
-        dp = _project(dx, dy, dz)
+        dp = _project(dx, dy, dz, _tmp_view)
         if dp:
             pygame.draw.circle(self.screen, RED, dp, 7)
 
